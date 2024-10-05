@@ -1,35 +1,89 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { Container, Stepper, Step, StepLabel, Box, Typography } from '@mui/material';
+import StepForm from './components/StepForm';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [formData, setFormData] = useState({
+    experience: '',
+    futureGoals: '',
+    dreamJob: '',
+    targetCompany: '',
+    skillsToImprove: '',
+    idealWorkEnvironment: ''
+  });
+
+  const steps = [
+    'How much experience do you have?',
+    'Where do you see yourself in 5 years?',
+    'What do you want to be when you grow up?',
+    'Do you have a target company in mind?',
+    'What skills would you like to improve?',
+    'What is your ideal work environment?'
+  ];
+
+  const reassuringMessages = [
+    'Great, every experience counts!',
+    'That’s a solid plan, keep pushing towards it!',
+    'Awesome, it’s important to have dreams!',
+    'Aiming high is the key to success!',
+    'Continuous improvement is the way to go!',
+    'Finding the right environment is crucial for growth!'
+  ];
+
+  const handleNext = () => {
+    setActiveStep(prevStep => prevStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep(prevStep => prevStep - 1);
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = () => {
+    console.log('Form Data:', formData);
+    alert('Form submitted successfully! Thank you for sharing.');
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Container maxWidth="mb">
+      <Box sx={{ mt: 4, mb: 4, textAlign: 'center' }}>
+        <Typography variant="h3" component="h1" gutterBottom>
+          Intellio
+        </Typography>
+        <Typography variant="subtitle1" color="textSecondary">
+          Let's explore your path and goals!
+        </Typography>
+      </Box>
 
-export default App
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map((label, index) => (
+            <Step key={index}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+
+      <StepForm 
+        activeStep={activeStep} 
+        formData={formData} 
+        handleChange={handleChange} 
+        handleNext={handleNext} 
+        handleBack={handleBack} 
+        handleSubmit={handleSubmit}
+        steps={steps}
+        reassuringMessages={reassuringMessages}
+      />
+    </Container>
+  );
+};
+
+export default App;
