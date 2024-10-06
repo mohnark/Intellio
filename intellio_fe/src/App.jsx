@@ -1,89 +1,65 @@
-import React, { useState } from 'react';
-import { Container, Stepper, Step, StepLabel, Box, Typography } from '@mui/material';
-import StepForm from './components/StepForm';
+import React, { useState, useEffect } from 'react';
+import { Container, TextField, Button, Box, Typography, Paper } from '@mui/material';
+import axios from 'axios';
 
-const App = () => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState({
-    experience: '',
-    futureGoals: '',
-    dreamJob: '',
-    targetCompany: '',
-    skillsToImprove: '',
-    idealWorkEnvironment: ''
-  });
+const ChatBox = ({ messages }) => (
+  <Box sx={{ height: '300px', overflowY: 'auto', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+    {messages.map((message, index) => (
+      <Paper
+        key={index}
+        sx={{
+          marginBottom: '10px',
+          padding: '10px',
+          backgroundColor: message.sender === 'user' ? '#d1e7ff' : '#e0e0e0',
+          alignSelf: message.sender === 'user' ? 'flex-end' : 'flex-start',
+        }}
+      >
+        <Typography variant="body1">{message.text}</Typography>
+      </Paper>
+    ))}
+  </Box>
+);
 
-  const steps = [
-    'How much experience do you have?',
-    'Where do you see yourself in 5 years?',
-    'What do you want to be when you grow up?',
-    'Do you have a target company in mind?',
-    'What skills would you like to improve?',
-    'What is your ideal work environment?'
-  ];
+const InputBox = ({ input, setInput, sendMessage }) => (
+  <Box component="form" onSubmit={sendMessage} sx={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+    <TextField
+      fullWidth
+      value={input}
+      onChange={(e) => setInput(e.target.value)}
+      placeholder="Type a message..."
+    />
+    <Button variant="contained" type="submit">Send</Button>
+  </Box>
+);
 
-  const reassuringMessages = [
-    'Great, every experience counts!',
-    'That’s a solid plan, keep pushing towards it!',
-    'Awesome, it’s important to have dreams!',
-    'Aiming high is the key to success!',
-    'Continuous improvement is the way to go!',
-    'Finding the right environment is crucial for growth!'
-  ];
+const ChatContainer = () => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
 
-  const handleNext = () => {
-    setActiveStep(prevStep => prevStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep(prevStep => prevStep - 1);
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = () => {
-    console.log('Form Data:', formData);
-    alert('Form submitted successfully! Thank you for sharing.');
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    if (input.trim()) {
+      const userMessage = { sender: 'user', text: input };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      setInput('');
+      try {
+        const response = await axios.post('http://localhost:5000/query-discovery', { query: input });
+        setMessages((prevMessages) => [...prevMessages, { sender: 'bot', text: response?.data?.response}]);
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
   };
 
   return (
-    <Container maxWidth="mb">
-      <Box sx={{ mt: 4, mb: 4, textAlign: 'center' }}>
-        <Typography variant="h3" component="h1" gutterBottom>
-          Intellio
-        </Typography>
-        <Typography variant="subtitle1" color="textSecondary">
-          Let's explore your path and goals!
-        </Typography>
-      </Box>
-
-      <Box sx={{ mt: 4, mb: 4 }}>
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label, index) => (
-            <Step key={index}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Box>
-
-      <StepForm 
-        activeStep={activeStep} 
-        formData={formData} 
-        handleChange={handleChange} 
-        handleNext={handleNext} 
-        handleBack={handleBack} 
-        handleSubmit={handleSubmit}
-        steps={steps}
-        reassuringMessages={reassuringMessages}
-      />
+    <Container maxWidth="sm" sx={{ marginTop: '2rem' }}>
+      <Typography variant="h4" sx={{ marginBottom: '1rem', textAlign: 'center' }}>Intellio-Assistant</Typography>
+      <ChatBox messages={messages} />
+      <InputBox input={input} setInput={setInput} sendMessage={sendMessage} />
     </Container>
   );
 };
+
+const App = () => <ChatContainer />;
 
 export default App;
